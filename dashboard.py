@@ -226,7 +226,7 @@ st.markdown("### aFRR Market Depth: Positive vs Negative Regulation")
 st.caption(
     "Automatic Frequency Restoration Reserve (aFRR) is tendered in 4-hour blocks. "
     "The spread between positive (upward) and negative (downward) prices reflects the directional "
-    "cost of balancing — a signal of how asymmetric the market is becoming as renewable share grows."
+    "cost of balancing, a signal of how asymmetric the market is becoming as renewable share grows."
 )
 
 c2a, c2b = st.columns([3, 2])
@@ -332,7 +332,7 @@ if "positive" in afrr_spread.columns and "negative" in afrr_spread.columns:
     st.plotly_chart(fig2c, use_container_width=True)
 
     st.caption(
-        "When the spread is positive, upward flexibility (aFRR+) commands a premium over downward — "
+        "When the spread is positive, upward flexibility (aFRR+) commands a premium over downward, "
         "a signal that thermal generation headroom is tight and dispatchable upward capacity is scarce. "
         "Spikes above zero are the highest-value moments for a VPP with upward dispatch capability."
     )
