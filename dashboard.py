@@ -75,7 +75,7 @@ def load_data():
     base = Path(__file__).parent / "data"
 
     fcr   = pd.read_csv(base / "fcr_tenders.csv",     parse_dates=["tender_date", "delivery_date"])
-    afrr  = pd.read_csv(base / "afrr_tenders.csv",    parse_dates=["tender_date", "delivery_week_start"])
+    afrr  = pd.read_csv(base / "afrr_tenders.csv",    parse_dates=["tender_date", "delivery_week_start", "block_start"])
     smard = pd.read_csv(base / "smard_renewable.csv", parse_dates=["date"])
     load  = pd.read_csv(base / "smard_load.csv",      parse_dates=["date"])
 
@@ -246,28 +246,29 @@ st.caption(
 
 c1a, c1b = st.columns([3, 2])
 
-# aFRR+ price over time — full time series with spike annotations
+# aFRR+ price over time — one point per 4-hour block, x-axis is exact block datetime
 afrr_pos_ts = afrr[afrr["direction"] == "positive"].copy()
-afrr_pos_ts = afrr_pos_ts.sort_values("delivery_week_start")
+afrr_pos_ts = afrr_pos_ts.sort_values("block_start")
 afrr_pos_ts["rolling"] = afrr_pos_ts["clearing_price_eur_mw_h"].rolling(30, min_periods=1).mean()
 
 fig1a = go.Figure()
 fig1a.add_trace(go.Scatter(
-    x=afrr_pos_ts["delivery_week_start"], y=afrr_pos_ts["clearing_price_eur_mw_h"],
-    name="aFRR+ price",
+    x=afrr_pos_ts["block_start"], y=afrr_pos_ts["clearing_price_eur_mw_h"],
+    name="aFRR+ price (4h block)",
     mode="lines", line=dict(color=GREY_LINE, width=1),
-    hovertemplate="%{x|%d %b %Y}<br>Price: €%{y:.2f}/MW/h<extra></extra>",
+    hovertemplate="%{x|%d %b %Y %H:%M}<br>Price: €%{y:.2f}/MW/h<extra></extra>",
 ))
 fig1a.add_trace(go.Scatter(
-    x=afrr_pos_ts["delivery_week_start"], y=afrr_pos_ts["rolling"],
-    name="30-period rolling avg",
+    x=afrr_pos_ts["block_start"], y=afrr_pos_ts["rolling"],
+    name="30-block rolling avg",
     mode="lines", line=dict(color=TEAL, width=2.5),
-    hovertemplate="%{x|%d %b %Y}<br>Avg: €%{y:.2f}/MW/h<extra></extra>",
+    hovertemplate="%{x|%d %b %Y %H:%M}<br>Avg: €%{y:.2f}/MW/h<extra></extra>",
 ))
 fig1a.update_layout(
-    title="aFRR+ (upward regulation) clearing price over time",
-    xaxis_title="Delivery date",
+    title="aFRR+ (upward regulation) clearing price — each point is one 4-hour block",
+    xaxis_title="Block start time",
     yaxis_title="Clearing price (€/MW/h)",
+    hovermode="closest",
 )
 apply_base_layout(fig1a, height=360)
 c1a.plotly_chart(fig1a, use_container_width=True)

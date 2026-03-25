@@ -190,15 +190,33 @@ def process_afrr(xl: pd.ExcelFile) -> pd.DataFrame:
     for col in [avg_col, marginal_col, alloc_col, offered_col]:
         raw[col] = clean_numeric(raw[col])
 
+    # Extract block start hour from PRODUCT column (e.g. POS_08_12 → 08, NEG_16_20 → 16)
+    # Format is always DIRECTION_HHMM_HHMM where first HHMM is block start
+    if "PRODUCT" in raw.columns:
+        raw["block_hour"] = (raw["PRODUCT"]
+                             .astype(str)
+                             .str.extract(r"_(\d{2})_\d{2}$")[0]
+                             .fillna("00")
+                             .astype(int))
+    else:
+        raw["block_hour"] = 0
+
+    # Build full block datetime: date + block start hour
+    raw["block_start"] = pd.to_datetime(raw["DATE_FROM"].dt.date.astype(str)) + pd.to_timedelta(raw["block_hour"], unit="h")
+
     afrr = pd.DataFrame({
         "tender_date":             raw["DATE_FROM"].dt.date,
-        "delivery_week_start":     raw["DATE_FROM"].dt.date,
+        "delivery_date":           raw["DATE_FROM"].dt.date,
+        "block_start":             raw["block_start"],
+        "block_hour":              raw["block_hour"],
         "direction":               raw["direction"],
         "awarded_mw":              raw[alloc_col].round(1),
         "offered_mw":              raw[offered_col].round(1),
         "clearing_price_eur_mw_h": raw[avg_col].round(4),
         "marginal_price_eur_mw_h": raw[marginal_col].round(4),
         "num_bids":                np.nan,
+        # Keep delivery_week_start for backward compatibility with spread calculations
+        "delivery_week_start":     raw["DATE_FROM"].dt.date,
     })
 
     afrr = afrr.dropna(subset=["clearing_price_eur_mw_h"])
