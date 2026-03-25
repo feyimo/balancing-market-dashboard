@@ -64,6 +64,6 @@ A VPP operator running aggregated home battery assets should adjust strategy alo
 
 **[Live dashboard](https://when-renewables-create-scarcity-dashboard-by-feyimo.streamlit.app)**
 
-**[GitHub repo](https://github.com/feyimo/when-renewables-create-scarcity-dashboard)**
+**[GitHub repo](https://github.com/feyimo/when-renewables-create-scarcity)**
 
 Built with Python, pandas, Plotly, and Streamlit. Data sourced from regelleistung.net (FCR and aFRR tenders) and SMARD.de (Bundesnetzagentur).
